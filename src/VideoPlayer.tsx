@@ -1,6 +1,6 @@
 
 import { Player } from '@remotion/player';
-import animationData from './animation.json';
+import axios from 'axios';
 import MyComposition from './MyComposition';
 import './videoPlayer.css';
 
@@ -21,16 +21,13 @@ const VideoPlayer: React.FC = () => {
           allowFullscreen={true}
           clickToPlay={true}
           spaceKeyToPlayOrPause={true}
-          inputProps={{
-            play: true,
-            animeObj: animationData,
-          }}
           style={{ backgroundColor: 'black', width: '100%' }}
         />
       </div>
       <button
         onClick={() => {
-          console.log('render button clicked')
+          console.log('render button clicked');
+          axios.post('http://localhost:4004/render')
         }}
         className='renderButton'
       >

@@ -38,19 +38,18 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post('/render', async (req, res) => {
-
-    const tmpDir = await fs.promises.mkdtemp(path.join(__dirname, 'remotion'));
+app.post('/render', async () => {
     const generated_video_name = 'test.mp4';
 
     const bundled = await bundle(
-        path.join(__dirname, './src/uicontainers/remotion/index.tsx')
+        path.join(__dirname, './src/remotion/index.tsx')
     );
 
+    logger.info(`bundled: ${bundled}`);
 
-    const comps = await getCompositions(bundled);
+    await getCompositions(bundled);
 
-    const video = comps.find((c) => c.id === compositionId);
+    const video = 'HelloWorld';
 
     if (!video) {
         logger.error(`No video called ${compositionId}`)
@@ -61,79 +60,40 @@ app.post('/render', async (req, res) => {
         fs.mkdirSync(generatedVideoDir);
     }
     const vidDir = path.join(__dirname, 'generated_video');
-    logger.info(`using ${os.cpus().length / 2} threads to render`);
 
-    const onProgress = ({
-        renderedFrames,
-        encodedDoneIn,
-        renderedDoneIn,
-        stitchStage,
-    }) => {
-        if (stitchStage === "encoding") {
-            // logger.info("Encoding...");
-        } else if (stitchStage === "muxing") {
-            // Second pass, adding audio to the video
-            showLogForOnce('muxing', `${inputData.overlay_name} - Muxing audio...`);
-        }
-        currentFrame = renderedFrames;
-        // showLogForOnce('rendered', `video ${inputData.overlay_name} - ${renderedFrames} rendered`);
-
-        if (renderedDoneIn !== null) {
-            showLogForOnce('renderedIn', `${inputData.overlay_name} Rendered in ${renderedDoneIn}ms`);
-        }
-        if (encodedDoneIn !== null) {
-            showLogForOnce('encodedIn', `${inputData.overlay_name} Encoded in ${encodedDoneIn}ms`);
-        }
-    };
-    const onDownload = (src) => {
-        const id = Math.random();
-        const download = {
-            id,
-            name: src,
-            progress: 0,
-        };
-        downloads.push(download);
-        showLogForOnce('downloadProgress', `${inputData.overlay_name} progress ${download.progress}%`);
-        showLogForOnce('sourceInsideDownload', `${inputData.overlay_name} source ${src}%`);
-
-        return ({ percent }) => {
-            showLogForOnce('downloadPercent', `Downloading video: ${inputData.overlay_name} - ${Math.floor(percent * 100)}%`);
-        };
-    };
-
-    const render = renderMedia({
-        composition: {
-            durationInFrames: 12999,
-            fps: 60,
-            height: 1080,
-            id: "flowcode",
-            width: 1920,
-        },
-        onStart: ({ frameCount }) => {
-            logger.info(`Beginning to render ${frameCount}.`);
-        },
-        frameRange: [0, inputData.videoInfo.durationInFrames || 1800],
-        quality: 100,
-        verbose: true,
-        chromiumOptions: {
-        },
-        imageFormat: 'jpeg',
-        timeoutInMilliseconds: 1000 * 60 * 5,
-        onProgress: (prog) => {
-            console.log("frame generated: " + prog.renderedFrames)
-        },
-        // onProgress,
-        // onDownload,
-        parallelism: 6,
-        codec: "h264",
-        crf: 1,
-        serveUrl: bundled,
-        outputLocation: `${vidDir}/${generated_video_name}`,
-        inputProps: { allSequences: req.body.sequenceData },
-        disallowParallelEncoding: true
-    });
-
-    await render;
+    try {
+        await renderMedia({
+            composition: {
+                durationInFrames: 12999,
+                fps: 60,
+                height: 1080,
+                id: "HelloWorld",
+                width: 1920,
+            },
+            onStart: ({ frameCount }) => {
+                logger.info(`Beginning to render ${frameCount}.`);
+            },
+            frameRange: [0, 12998],
+            quality: 100,
+            verbose: true,
+            chromiumOptions: {
+            },
+            imageFormat: 'jpeg',
+            timeoutInMilliseconds: 1000 * 60 * 5,
+            onProgress: (prog) => {
+                console.log("frame generated: " + prog.renderedFrames)
+            },
+            concurrency: 6,
+            codec: "h264",
+            crf: 1,
+            serveUrl: bundled,
+            outputLocation: 'video.mp4',
+            disallowParallelEncoding: true
+        });
+    } catch (e) {
+        logger.error(e);
+        throw e;
+    }
 })
 
 const server = app.listen(port);

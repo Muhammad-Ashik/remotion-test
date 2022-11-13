@@ -2,8 +2,9 @@ import React, { Fragment } from 'react';
 import { Freeze, Sequence } from 'remotion';
 import LottieAnimation from './LottieAnimation';
 import VideoComponent from './VideoComponent';
+import animeObj from './animation.json';
 
-const MyComposition = (props: { play?: boolean; animeObj?: any; }) => {
+const MyComposition = () => {
   const seqDetails = {
     from: 0,
     durationInFrames: 9648,
@@ -19,14 +20,14 @@ const MyComposition = (props: { play?: boolean; animeObj?: any; }) => {
         <LottieAnimation
           height={1080}
           width={1920}
-          animObj={props.animeObj}
+          animObj={animeObj}
         />
       </Sequence>
       <Sequence from={seqDetails.from + 1} durationInFrames={360}>
         <LottieAnimation
           height={1080}
           width={1920}
-          animObj={props.animeObj}
+          animObj={animeObj}
         />
       </Sequence>
       <Sequence
@@ -41,7 +42,7 @@ const MyComposition = (props: { play?: boolean; animeObj?: any; }) => {
           <LottieAnimation
             height={1080}
             width={1920}
-            animObj={props.animeObj}
+            animObj={animeObj}
           />
         </Freeze>
       </Sequence>
@@ -50,7 +51,7 @@ const MyComposition = (props: { play?: boolean; animeObj?: any; }) => {
           <LottieAnimation
             height={1080}
             width={1920}
-            animObj={props.animeObj}
+            animObj={animeObj}
           />
         </Sequence>
       </Sequence>
