@@ -1,0 +1,9 @@
+version: '3.9'
+services:   
+  flowcode_render_api:
+    build: 
+      context: .
+    volumes:
+      - ./:/app
+    ports:
+      - 4010:4004
